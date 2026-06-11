@@ -18,7 +18,7 @@ sola URL con su propia SPA y autenticación. La detección corre 100% en local, 
 de pago en la nube.
 
 ### **0.4. URL del proyecto:**
-_(pendiente)_
+https://github.com/msolano/ShopGuard
 
 ### **0.5. URL o archivo comprimido del repositorio:**
-_(pendiente — se indicará el repositorio del código)_
+https://github.com/msolano/ShopGuard
