@@ -22,3 +22,6 @@ https://github.com/msolano/ShopGuard
 
 ### **0.5. URL o archivo comprimido del repositorio:**
 https://github.com/msolano/ShopGuard
+
+Repositorio **privado**. Acceso (lectura y escritura) concedido al equipo del curso:
+**jorge@lidr.co** y **julio@lidr.co**.

@@ -38,6 +38,9 @@ https://github.com/msolano/ShopGuard
 
 https://github.com/msolano/ShopGuard
 
+> El repositorio del código es **privado**. Se ha concedido acceso (lectura y escritura)
+> al equipo del curso: **jorge@lidr.co** y **julio@lidr.co**.
+
 ---
 
 ## 1. Descripción general del producto
