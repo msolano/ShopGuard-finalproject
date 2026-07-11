@@ -148,21 +148,24 @@ detecciones dibujadas (HUD con FPS y contador de alertas):
 Clip animado (30 fotogramas en vivo, el contador de alertas incrementa durante la captura):
 [`evidencia/demo-tienda-live.gif`](evidencia/demo-tienda-live.gif).
 
-**5. Detección del flujo principal (Patrón D)** — prueba física real (objeto guardado en el
-bolsillo) que dispara el **Patrón D [ALTO]**, registrada en el log del sistema:
+**5. Flujo completo de punta a punta (cámara → detección → alerta Telegram)** — prueba física real
+en la tienda: una persona lleva un objeto al cuerpo y el sistema dispara el **Patrón D [ALTO]** y
+**notifica por Telegram con la foto del incidente**:
+
+<img src="evidencia/telegram-alerta.jpeg" alt="Alerta ALTO por Telegram con foto del incidente" width="360">
 
 ```
-[ALTO] Patrón D — Objeto 'cell phone' entró al área corporal de la persona y no reapareció.
-[ALTO] Patrón D — Objeto 'concealing_object' entró al área corporal de la persona y no reapareció.
+🚨 ALERTA ALTO — Patrón: Patron_D
+Objeto 'hand_in_pocket' entró al área corporal de la persona y no reapareció.
+Cámara: 0 · 10/07/2026 20:25
 ```
 
-**6. Suite de pruebas** — `pytest -q tests/` → **86 passed** (ver §2.6).
+**6. Vídeo de demostración** — grabación del sistema funcionando en la tienda:
+[`evidencia/demo.mp4`](evidencia/demo.mp4) *(descárgalo para reproducir).*
 
-**7. Presentación del proyecto** (arquitectura + call-flow): [`evidencia/presentacion-shopguard.html`](evidencia/presentacion-shopguard.html).
+**7. Suite de pruebas** — `pytest -q tests/` → **86 passed** (ver §2.6).
 
-> **Vídeo del flujo principal (recomendado):** por ser el repositorio de código privado, se
-> recomienda anexar un vídeo breve (2–3 min) mostrando: alta de una cámara desde la UI, el vídeo en
-> vivo con detección, y una alerta disparándose. *(Placeholder para el enlace del vídeo.)*
+**8. Presentación del proyecto** (arquitectura + call-flow): [`evidencia/presentacion-shopguard.html`](evidencia/presentacion-shopguard.html).
 
 ---
 
