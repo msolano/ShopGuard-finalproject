@@ -166,7 +166,9 @@ una tienda real, con las detecciones dibujadas en tiempo real sobre las estanter
 
 **7. Suite de pruebas** — `pytest -q tests/` → **86 passed** (ver §2.6).
 
-**8. Presentación del proyecto** (arquitectura + call-flow): [`evidencia/presentacion-shopguard.html`](evidencia/presentacion-shopguard.html).
+**8. Presentación del proyecto** (visión, metodología SDD, arquitectura y call-flow) en PDF
+autocontenido: [`evidencia/presentacion-shopguard.pdf`](evidencia/presentacion-shopguard.pdf)
+(fuente HTML: [`evidencia/presentacion-shopguard.html`](evidencia/presentacion-shopguard.html)).
 
 ---
 
