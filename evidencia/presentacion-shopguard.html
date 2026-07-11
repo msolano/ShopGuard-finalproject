@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ShopGuard — Presentación</title>
+<style>
+  :root{
+    --bg:#ffffff; --page:#eceff4; --card:#f7f9fc; --grid:#e2e7ef;
+    --text:#1a2130; --muted:#68727f; --blue:#2563eb; --red:#dc2626;
+    --amber:#d97706; --green:#16a34a; --yellow:#ca8a04;
+    --chip-bg:#eaf1ff; --chip-bd:#cadcff; --chip-tx:#1d4ed8;
+    --font:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--page);color:var(--text);font-family:var(--font);line-height:1.45}
+  .slide{
+    width:1280px;min-height:720px;margin:24px auto;background:var(--bg);
+    border:1px solid var(--grid);border-radius:16px;padding:44px 52px;
+    display:flex;flex-direction:column;box-shadow:0 12px 40px rgba(20,30,50,.10);
+  }
+  .head{display:flex;align-items:center;gap:14px;border-bottom:2px solid var(--grid);
+    padding-bottom:16px;margin-bottom:24px}
+  .logo{font-size:2.1em}
+  .head h1{font-size:1.9em;font-weight:800;letter-spacing:.2px;color:#111827}
+  .head .sub{color:var(--muted);font-size:.95em;margin-top:2px}
+  .tag{margin-left:auto;font-size:.72em;color:var(--muted);border:1px solid var(--grid);
+    background:#f3f5f9;border-radius:20px;padding:5px 12px;text-transform:uppercase;letter-spacing:1px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .card{background:var(--card);border:1px solid var(--grid);border-radius:12px;
+    padding:16px 18px;border-left:4px solid var(--blue)}
+  .card.red{border-left-color:var(--red)} .card.amber{border-left-color:var(--amber)}
+  .card.green{border-left-color:var(--green)} .card.yellow{border-left-color:var(--yellow)}
+  .card h3{font-size:1.02em;margin-bottom:8px;display:flex;align-items:center;gap:8px;color:#111827}
+  .card ul{list-style:none;font-size:.9em;color:#3d4756}
+  .card li{padding:3px 0 3px 16px;position:relative}
+  .card li::before{content:"›";position:absolute;left:0;color:var(--muted)}
+  .card b{color:#111827}
+  .lead{color:#3d4756;font-size:1.05em;margin-bottom:22px;max-width:96%}
+  .lead b{color:#111827}
+  .pipeline{display:flex;align-items:stretch;gap:0;margin:6px 0 20px}
+  .step{flex:1;background:var(--card);border:1px solid var(--grid);padding:12px 10px;
+    text-align:center;position:relative}
+  .step:first-child{border-radius:10px 0 0 10px}
+  .step:last-child{border-radius:0 10px 10px 0}
+  .step .cp{font-size:.72em;color:var(--blue);font-weight:800;letter-spacing:1px}
+  .step .nm{font-size:.86em;margin-top:3px;color:#1a2130}
+  .step .gate{position:absolute;top:-9px;right:-9px;background:var(--green);color:#fff;
+    font-size:.62em;font-weight:700;border-radius:10px;padding:2px 7px}
+  .step.arrow::after{content:"→";position:absolute;right:-11px;top:50%;transform:translateY(-50%);
+    color:var(--muted);z-index:2;font-size:1.1em}
+  .foot{margin-top:auto;padding-top:18px;border-top:2px solid var(--grid);
+    display:flex;justify-content:space-between;color:var(--muted);font-size:.8em}
+  .chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
+  .chip{background:var(--chip-bg);border:1px solid var(--chip-bd);color:var(--chip-tx);font-size:.76em;
+    border-radius:16px;padding:4px 11px;font-weight:600}
+  .kpi{display:flex;gap:14px;margin-bottom:18px}
+  .kpi .b{flex:1;background:var(--card);border:1px solid var(--grid);border-radius:12px;
+    padding:12px 14px;text-align:center}
+  .kpi .n{font-size:1.7em;font-weight:800}
+  .kpi .l{font-size:.72em;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+  .band-title{font-size:.78em;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;
+    margin-bottom:8px;font-weight:700}
+  .pats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+  .pat{background:var(--card);border:1px solid var(--grid);border-radius:12px;padding:14px;
+    border-top:3px solid var(--red)}
+  .pat .badge{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;
+    border-radius:8px;background:#fdecec;color:var(--red);font-weight:800;font-size:1.05em;
+    border:1px solid #f6cccc;margin-bottom:8px}
+  .pat h4{font-size:.95em;margin-bottom:5px;color:#111827}
+  .pat p{font-size:.82em;color:#48505d;line-height:1.4}
+  code{background:#eef3fb;border:1px solid #d5e0f0;border-radius:5px;padding:1px 6px;
+    font-size:.85em;color:#0b57c9}
+  /* Lámina 3 — arquitectura */
+  .cols{display:grid;grid-template-columns:1.05fr .95fr;gap:22px}
+  .flow{display:flex;flex-direction:column;gap:0}
+  .fbox{background:var(--card);border:1px solid var(--grid);border-radius:12px;padding:12px 15px;
+    position:relative}
+  .fbox+.fbox{margin-top:26px}
+  .fbox+.fbox::before{content:"▼";position:absolute;top:-22px;left:50%;transform:translateX(-50%);
+    color:var(--muted);font-size:.8em}
+  .fbox .lbl{font-size:.72em;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px}
+  .fbox .row{display:flex;flex-wrap:wrap;gap:7px}
+  .fbox .u{background:var(--chip-bg);border:1px solid var(--chip-bd);color:var(--chip-tx);font-size:.82em;
+    border-radius:8px;padding:5px 10px;font-weight:600}
+  .fbox.proc{border-left:4px solid var(--red)} .fbox.api{border-left:4px solid var(--blue)}
+  .fbox.data{border-left:4px solid var(--amber)} .fbox.front{border-left:4px solid var(--green)}
+  .fbox.cap{border-left:4px solid var(--muted)}
+  .stack{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+  .si{background:var(--card);border:1px solid var(--grid);border-radius:10px;padding:10px 12px}
+  .si .k{font-size:.68em;color:var(--muted);text-transform:uppercase;letter-spacing:.8px}
+  .si .v{font-size:.9em;color:#111827;margin-top:3px;font-weight:600}
+  .graphcard{background:var(--card);border:1px solid var(--grid);border-radius:12px;padding:12px;
+    border-top:3px solid var(--blue)}
+  .graphcard img{max-width:100%;max-height:680px;width:auto;margin:0 auto;
+    border-radius:8px;border:1px solid var(--grid);display:block}
+  .graphcard .cap{font-size:.78em;color:var(--muted);margin-top:8px;line-height:1.4}
+  .graphcard .cap b{color:#3d4756}
+  @media print{
+    @page{size:A4 landscape;margin:8mm}
+    body{background:#fff}
+    .slide{margin:0 0 6mm 0;border:0;border-radius:0;box-shadow:none;page-break-after:always;
+      width:100%;min-height:auto}
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ LÁMINA 1 — EL SISTEMA ═══════════════ -->
+<section class="slide">
+  <div class="head">
+    <span class="logo">🛡️</span>
+    <div>
+      <h1>ShopGuard</h1>
+      <div class="sub">Videovigilancia inteligente con IA para retail — detección de robo</div>
+    </div>
+    <span class="tag">El sistema</span>
+  </div>
+
+  <p class="lead">
+    Detecta comportamientos sospechosos en tienda <b>100% en local</b> (YOLOv8 + MediaPipe),
+    genera <b>alertas con evidencia</b>, notifica por <b>Telegram</b> y <b>aprende</b> del
+    feedback del operador. Escala de una tienda a varias con un <b>gateway central</b>.
+  </p>
+
+  <div class="band-title">🎯 Patrones de conducta que detecta (A–D)</div>
+  <div class="pats">
+    <div class="pat">
+      <span class="badge">A</span>
+      <h4>Ocultamiento de objeto</h4>
+      <p>Un producto visible desaparece justo después de que la mano se le acerca.</p>
+    </div>
+    <div class="pat">
+      <span class="badge">B</span>
+      <h4>Permanencia anómala</h4>
+      <p>Persona quieta demasiado tiempo (umbral configurable; acotable a zonas de riesgo).</p>
+    </div>
+    <div class="pat">
+      <span class="badge">C</span>
+      <h4>Postura sospechosa</h4>
+      <p>Agacharse brusco, dar la espalda a la cámara o llevar las manos al torso (MediaPipe Pose).</p>
+    </div>
+    <div class="pat">
+      <span class="badge">D</span>
+      <h4>Objeto pegado al cuerpo</h4>
+      <p>Un objeto entra al área corporal de la persona y ya no vuelve a detectarse.</p>
+    </div>
+  </div>
+
+  <div class="grid-3">
+    <div class="card red">
+      <h3>🎥 Detección</h3>
+      <ul>
+        <li>YOLOv8 + MediaPipe Pose, en local</li>
+        <li>Patrones A–I + modelo custom</li>
+        <li>Ocultamiento de <b>cualquier objeto</b> (modo configurable)</li>
+        <li><b>Zonas</b> de empleado que evitan falsos positivos</li>
+      </ul>
+    </div>
+    <div class="card amber">
+      <h3>🚨 Alertas</h3>
+      <ul>
+        <li>Evidencia (captura) por alerta</li>
+        <li><b>Telegram</b> no-bloqueante (nivel alto)</li>
+        <li><b>Reporte del día</b> auto a las 22:00</li>
+      </ul>
+    </div>
+    <div class="card green">
+      <h3>🧠 Aprende del uso</h3>
+      <ul>
+        <li>Resolver = <b>robo real / falso positivo</b></li>
+        <li>Falsos positivos → dataset (reentrena)</li>
+        <li>Etiquetado y export YOLO en la UI</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>📊 Dashboard</h3>
+      <ul>
+        <li>Video en vivo, alertas, historial</li>
+        <li>Estadísticas del día + <b>precisión</b></li>
+        <li>Ayuda de admin y "Acerca de" (versión)</li>
+      </ul>
+    </div>
+    <div class="card yellow">
+      <h3>🏢 Gateway multi-tienda</h3>
+      <ul>
+        <li>SPA propia que agrega N tiendas</li>
+        <li>Alta/edición de <b>tiendas y cámaras desde la UI</b>, en caliente</li>
+        <li>Login admin (cookie firmada)</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>🔒 Seguridad y stack</h3>
+      <ul>
+        <li>Auth opt-in por API key · <b>credenciales cifradas en reposo</b></li>
+        <li>FastAPI + Streamlit + SQLite/PostgreSQL</li>
+        <li>Config en BD (fuente de verdad); sin secretos en el repo</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="foot"><span>🛡️ ShopGuard · sistema de prevención de pérdidas con IA</span><span>1 / 5</span></div>
+</section>
+
+<!-- ═══════════════ LÁMINA 2 — EL ECOSISTEMA DE DESARROLLO ═══════════════ -->
+<section class="slide">
+  <div class="head">
+    <span class="logo">🧭</span>
+    <div>
+      <h1>Ecosistema 360</h1>
+      <div class="sub">Cómo se construye ShopGuard — desarrollo guiado por especificación (SDD)</div>
+    </div>
+    <span class="tag">El desarrollo</span>
+  </div>
+
+  <p class="lead">
+    Cada feature pasa por un <b>ciclo con puntos de control (CP0–CP5)</b> y <b>aprobación humana
+    en los gates</b>: primero el contrato (qué y por qué), después el código, y siempre con
+    <b>trazabilidad</b> — nada se implementa sin su especificación.
+  </p>
+
+  <div class="pipeline">
+    <div class="step arrow"><div class="cp">CP0</div><div class="nm">Intake</div></div>
+    <div class="step arrow"><div class="cp">CP1</div><div class="nm">SRS</div><span class="gate">✓ aprob.</span></div>
+    <div class="step arrow"><div class="cp">CP2</div><div class="nm">Spec</div><span class="gate">✓ aprob.</span></div>
+    <div class="step arrow"><div class="cp">CP3</div><div class="nm">Plan</div></div>
+    <div class="step arrow"><div class="cp">CP4</div><div class="nm">Validación</div></div>
+    <div class="step"><div class="cp">CP5</div><div class="nm">Cierre</div></div>
+  </div>
+
+  <div class="band-title">🧩 Dentro de CP3 — el plan se descompone en tareas T1…Tx con dependencias</div>
+  <div class="pipeline">
+    <div class="step arrow"><div class="cp">T1</div><div class="nm">base · sin deps</div></div>
+    <div class="step arrow"><div class="cp">T2</div><div class="nm">← T1</div></div>
+    <div class="step arrow"><div class="cp">T3</div><div class="nm">← T1, T2</div></div>
+    <div class="step arrow"><div class="cp">…</div><div class="nm">tamaño XS–L</div></div>
+    <div class="step"><div class="cp">Tx</div><div class="nm">← previas</div></div>
+  </div>
+
+  <div class="grid-3">
+    <div class="card">
+      <h3>📐 Especificación primero</h3>
+      <ul>
+        <li>Kickoff-prompt → intake → SRS → spec</li>
+        <li>Requisitos con ID (REQ/NFR)</li>
+        <li>Criterios de aceptación testeables</li>
+      </ul>
+    </div>
+    <div class="card green">
+      <h3>✅ Calidad (TRUST 5)</h3>
+      <ul>
+        <li>Tested · Readable · Unified</li>
+        <li>Secured · Trackable</li>
+        <li>Validación + secret scan por feature</li>
+      </ul>
+    </div>
+    <div class="card amber">
+      <h3>🧾 Decisiones y riesgos</h3>
+      <ul>
+        <li><b>ADRs</b> (alternativas y consecuencias)</li>
+        <li>Decision-log + risk-register</li>
+        <li>Matriz de trazabilidad NEED→REQ</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>🛠️ Herramientas</h3>
+      <ul>
+        <li><code>scaffold-feature.sh</code> (crea CP0–CP5)</li>
+        <li><code>verify-governance.sh</code> (valida gobierno)</li>
+        <li><code>run-quality-gates.sh</code></li>
+      </ul>
+    </div>
+    <div class="card red">
+      <h3>🤖 Agentes alineados</h3>
+      <ul>
+        <li><code>AGENTS.md</code> = fuente de verdad</li>
+        <li>Plantillas en <code>templates/</code></li>
+        <li>Reglas para Claude/Cursor/Copilot…</li>
+      </ul>
+    </div>
+    <div class="card yellow">
+      <h3>📦 Features entregadas</h3>
+      <ul>
+        <li>Reporte diario · Zonas · Etiquetado</li>
+        <li>Resolver = feedback · Gateway</li>
+        <li><b>Gestión cámaras/tiendas</b> · <b>Ocultar cualquier objeto</b></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="chips">
+    <span class="chip">gateway multi-tienda</span>
+    <span class="chip">employee-zone-suppression</span>
+    <span class="chip">evidence-labeling-dataset</span>
+    <span class="chip">zone-management</span>
+    <span class="chip">daily-stats-report-telegram</span>
+    <span class="chip">alert-resolution-feedback</span>
+    <span class="chip">about-version-changelog</span>
+    <span class="chip">admin-help-docs</span>
+    <span class="chip">stores-cameras-management</span>
+    <span class="chip">concealment-any-object</span>
+  </div>
+
+  <div class="foot"><span>🧭 Ecosistema 360 · SDD con gobierno y trazabilidad</span><span>2 / 5</span></div>
+</section>
+
+<!-- ═══════════════ LÁMINA 3 — ARQUITECTURA ═══════════════ -->
+<section class="slide">
+  <div class="head">
+    <span class="logo">🏗️</span>
+    <div>
+      <h1>Arquitectura</h1>
+      <div class="sub">El sistema por dentro — capas, stack tecnológico y mapa de código</div>
+    </div>
+    <span class="tag">Cómo está hecho</span>
+  </div>
+
+  <div class="cols">
+    <!-- Flujo por capas -->
+    <div>
+      <div class="band-title">🔩 Capas (de la cámara a la pantalla)</div>
+      <div class="flow">
+        <div class="fbox cap">
+          <div class="lbl">Captura</div>
+          <div class="row"><span class="u">Webcam USB</span><span class="u">Cámaras IP / RTSP</span></div>
+        </div>
+        <div class="fbox proc">
+          <div class="lbl">Procesamiento · 1 hilo por cámara</div>
+          <div class="row">
+            <span class="u">YOLOv8 (Lock)</span><span class="u">MediaPipe Pose</span>
+            <span class="u">PatternDetector A–I</span><span class="u">→ send_alert()</span>
+          </div>
+        </div>
+        <div class="fbox data">
+          <div class="lbl">Datos y evidencia</div>
+          <div class="row">
+            <span class="u">evidence/ (JPEG)</span><span class="u">BD alerts + config (SQLAlchemy)</span>
+            <span class="u">credenciales cifradas</span>
+          </div>
+        </div>
+        <div class="fbox api">
+          <div class="lbl">API</div>
+          <div class="row">
+            <span class="u">FastAPI + asyncio</span><span class="u">REST /alerts /stats /about…</span>
+            <span class="u">WebSocket (alertas en vivo)</span>
+          </div>
+        </div>
+        <div class="fbox front">
+          <div class="lbl">Presentación</div>
+          <div class="row">
+            <span class="u">Dashboard Streamlit :8501</span><span class="u">Gateway SPA vanilla :8080</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stack + grafo -->
+    <div>
+      <div class="band-title">🧰 Stack tecnológico</div>
+      <div class="stack">
+        <div class="si"><div class="k">Backend</div><div class="v">FastAPI (Python) + asyncio</div></div>
+        <div class="si"><div class="k">Frontend</div><div class="v">Streamlit + SPA vanilla JS</div></div>
+        <div class="si"><div class="k">Base de datos</div><div class="v">SQLite o PostgreSQL · SQLAlchemy</div></div>
+        <div class="si"><div class="k">IA / visión</div><div class="v">YOLOv8 (ultralytics) + MediaPipe</div></div>
+        <div class="si"><div class="k">Contenedores</div><div class="v">Docker Compose · PostgreSQL local</div></div>
+        <div class="si"><div class="k">Despliegue</div><div class="v">start.sh (local) · Docker completo (roadmap)</div></div>
+        <div class="si"><div class="k">Notificaciones</div><div class="v">Telegram (no-bloqueante)</div></div>
+        <div class="si"><div class="k">Auth</div><div class="v">API key + cookie firmada (gateway)</div></div>
+      </div>
+
+      <div class="band-title">🕸️ Mapa de código (grafos)</div>
+      <div class="graphcard">
+        <img src="assets/code-graph.png" alt="Grafo de dependencias del código de ShopGuard">
+        <div class="cap">
+          <b>1096 nodos · 1962 aristas · 77 comunidades</b> — dependencias reales del código
+          (backend Python, .NET y gateway JS). Generado con <b>graphify</b>, se reconstruye en cada
+          commit. Versión interactiva: <b>graphify-out/graph.html</b>.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot"><span>🏗️ Arquitectura por capas · procesamiento local en hilos, API asíncrona</span><span>3 / 5</span></div>
+</section>
+
+<!-- ═══════════════ LÁMINA 4 — CALL FLOW ═══════════════ -->
+<section class="slide">
+  <div class="head">
+    <span class="logo">🔀</span>
+    <div>
+      <h1>Flujo de llamadas (call flow)</h1>
+      <div class="sub">Cómo se relacionan los módulos del código — vista generada del repositorio</div>
+    </div>
+    <span class="tag">Mapa de módulos</span>
+  </div>
+
+  <p class="lead">
+    Cada caja es una <b>comunidad de código</b> (módulo/área) y las flechas son sus
+    <b>dependencias reales</b>: <code>imports</code>, <code>calls</code>, <code>references</code> y
+    <code>contains</code>. Permite ver de un vistazo qué depende de qué —útil para onboarding y
+    para razonar el impacto de un cambio.
+  </p>
+
+  <div class="graphcard">
+    <img src="assets/call-flow.png" alt="Diagrama de flujo de llamadas entre módulos de ShopGuard">
+    <div class="cap">
+      <b>Ejemplos:</b> <code>Graph Build → Serving API</code> (imports),
+      <code>Analysis &amp; Clustering → CameraDetector</code> (calls),
+      <code>Tests &amp; Fixtures → mint_mjpeg_token</code> (method). Generado con <b>graphify</b> desde el
+      commit en ejecución (incluye ya <code>config_store</code>, <code>crypto</code> y
+      <code>store_repo</code>); se reconstruye en cada commit. Interactivo (zoom/pan):
+      <b>graphify-out/ShopGuard-callflow.html</b>.
+    </div>
+  </div>
+
+  <div class="chips">
+    <span class="chip">imports</span>
+    <span class="chip">calls</span>
+    <span class="chip">references</span>
+    <span class="chip">contains</span>
+  </div>
+
+  <div class="foot"><span>🔀 Call flow · dependencias entre comunidades de código (graphify)</span><span>4 / 5</span></div>
+</section>
+
+<!-- ═══════════════ LÁMINA 5 — EVIDENCIA EN TIENDA REAL ═══════════════ -->
+<section class="slide">
+  <div class="head">
+    <span class="logo">🛡️</span>
+    <div>
+      <h1>Evidencia en tienda real</h1>
+      <div class="sub">Detecciones y alertas ALTO capturadas en un comercio, con foto del incidente</div>
+    </div>
+    <span class="tag">En vivo</span>
+  </div>
+
+  <p class="lead">
+    Prueba física en una tienda de accesorios: el sistema detecta el ocultamiento <b>en tiempo
+    real</b>, guarda la <b>evidencia fotográfica</b> y notifica por <b>Telegram</b>. Cada tarjeta es
+    una alerta real registrada por el sistema.
+  </p>
+
+  <div class="grid">
+    <div class="card red">
+      <h3>🚨 ALTO · Patrón A — Ocultamiento de objeto</h3>
+      <img src="assets/alerta-65.jpg" alt="Evidencia Patrón A en tienda"
+           style="width:100%;border-radius:8px;border:1px solid var(--grid);margin:6px 0;display:block">
+      <p style="font-size:.86em;color:#48505d;line-height:1.45">
+        <b>"'cup' estaba visible, la mano se acercó y el objeto desapareció."</b><br>
+        ID #65 · Cámara 0 — producto tomado y ocultado del campo de la cámara.
+      </p>
+    </div>
+    <div class="card red">
+      <h3>🚨 ALTO · Patrón D — Objeto pegado al cuerpo</h3>
+      <img src="assets/alerta-64.jpg" alt="Evidencia Patrón D en tienda"
+           style="width:100%;border-radius:8px;border:1px solid var(--grid);margin:6px 0;display:block">
+      <p style="font-size:.86em;color:#48505d;line-height:1.45">
+        <b>"'concealing_object' entró al área corporal de la persona y no reapareció."</b><br>
+        ID #64 · Cámara 0 — objeto llevado al cuerpo/bolsillo y ya no visible.
+      </p>
+    </div>
+  </div>
+
+  <div class="chips">
+    <span class="chip">cámara → detección → alerta → Telegram</span>
+    <span class="chip">evidencia fotográfica por incidente</span>
+    <span class="chip">nivel ALTO en tiempo real</span>
+  </div>
+
+  <div class="foot"><span>🛡️ Flujo completo validado en un comercio real</span><span>5 / 5</span></div>
+</section>
+
+</body>
+</html>
