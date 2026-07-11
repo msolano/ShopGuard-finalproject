@@ -98,9 +98,10 @@
   .graphcard .cap{font-size:.78em;color:var(--muted);margin-top:8px;line-height:1.4}
   .graphcard .cap b{color:#3d4756}
   @media print{
+    @page{size:A4 landscape;margin:8mm}
     body{background:#fff}
-    .slide{margin:0;border:0;border-radius:0;box-shadow:none;page-break-after:always;
-      width:100%;min-height:100vh}
+    .slide{margin:0 0 6mm 0;border:0;border-radius:0;box-shadow:none;page-break-after:always;
+      width:100%;min-height:auto}
   }
 </style>
 </head>
@@ -199,7 +200,7 @@
     </div>
   </div>
 
-  <div class="foot"><span>🛡️ ShopGuard · sistema de prevención de pérdidas con IA</span><span>1 / 4</span></div>
+  <div class="foot"><span>🛡️ ShopGuard · sistema de prevención de pérdidas con IA</span><span>1 / 5</span></div>
 </section>
 
 <!-- ═══════════════ LÁMINA 2 — EL ECOSISTEMA DE DESARROLLO ═══════════════ -->
@@ -301,7 +302,7 @@
     <span class="chip">concealment-any-object</span>
   </div>
 
-  <div class="foot"><span>🧭 Ecosistema 360 · SDD con gobierno y trazabilidad</span><span>2 / 4</span></div>
+  <div class="foot"><span>🧭 Ecosistema 360 · SDD con gobierno y trazabilidad</span><span>2 / 5</span></div>
 </section>
 
 <!-- ═══════════════ LÁMINA 3 — ARQUITECTURA ═══════════════ -->
@@ -380,7 +381,7 @@
     </div>
   </div>
 
-  <div class="foot"><span>🏗️ Arquitectura por capas · procesamiento local en hilos, API asíncrona</span><span>3 / 4</span></div>
+  <div class="foot"><span>🏗️ Arquitectura por capas · procesamiento local en hilos, API asíncrona</span><span>3 / 5</span></div>
 </section>
 
 <!-- ═══════════════ LÁMINA 4 — CALL FLOW ═══════════════ -->
@@ -420,7 +421,54 @@
     <span class="chip">contains</span>
   </div>
 
-  <div class="foot"><span>🔀 Call flow · dependencias entre comunidades de código (graphify)</span><span>4 / 4</span></div>
+  <div class="foot"><span>🔀 Call flow · dependencias entre comunidades de código (graphify)</span><span>4 / 5</span></div>
+</section>
+
+<!-- ═══════════════ LÁMINA 5 — EVIDENCIA EN TIENDA REAL ═══════════════ -->
+<section class="slide">
+  <div class="head">
+    <span class="logo">🛡️</span>
+    <div>
+      <h1>Evidencia en tienda real</h1>
+      <div class="sub">Detecciones y alertas ALTO capturadas en un comercio, con foto del incidente</div>
+    </div>
+    <span class="tag">En vivo</span>
+  </div>
+
+  <p class="lead">
+    Prueba física en una tienda de accesorios: el sistema detecta el ocultamiento <b>en tiempo
+    real</b>, guarda la <b>evidencia fotográfica</b> y notifica por <b>Telegram</b>. Cada tarjeta es
+    una alerta real registrada por el sistema.
+  </p>
+
+  <div class="grid">
+    <div class="card red">
+      <h3>🚨 ALTO · Patrón A — Ocultamiento de objeto</h3>
+      <img src="assets/alerta-65.jpg" alt="Evidencia Patrón A en tienda"
+           style="width:100%;border-radius:8px;border:1px solid var(--grid);margin:6px 0;display:block">
+      <p style="font-size:.86em;color:#48505d;line-height:1.45">
+        <b>"'cup' estaba visible, la mano se acercó y el objeto desapareció."</b><br>
+        ID #65 · Cámara 0 — producto tomado y ocultado del campo de la cámara.
+      </p>
+    </div>
+    <div class="card red">
+      <h3>🚨 ALTO · Patrón D — Objeto pegado al cuerpo</h3>
+      <img src="assets/alerta-64.jpg" alt="Evidencia Patrón D en tienda"
+           style="width:100%;border-radius:8px;border:1px solid var(--grid);margin:6px 0;display:block">
+      <p style="font-size:.86em;color:#48505d;line-height:1.45">
+        <b>"'concealing_object' entró al área corporal de la persona y no reapareció."</b><br>
+        ID #64 · Cámara 0 — objeto llevado al cuerpo/bolsillo y ya no visible.
+      </p>
+    </div>
+  </div>
+
+  <div class="chips">
+    <span class="chip">cámara → detección → alerta → Telegram</span>
+    <span class="chip">evidencia fotográfica por incidente</span>
+    <span class="chip">nivel ALTO en tiempo real</span>
+  </div>
+
+  <div class="foot"><span>🛡️ Flujo completo validado en un comercio real</span><span>5 / 5</span></div>
 </section>
 
 </body>
