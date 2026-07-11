@@ -4,6 +4,7 @@
 
 ## Índice
 
+- [🧭 Metodología de prompting: SDD con CP0-CP5](#-metodología-de-prompting-sdd-con-cp0-cp5)
 1. [Descripción general del producto](#1-descripción-general-del-producto)
 2. [Arquitectura del sistema](#2-arquitectura-del-sistema)
 3. [Modelo de datos](#3-modelo-de-datos)
@@ -11,10 +12,36 @@
 5. [Historias de usuario](#5-historias-de-usuario)
 6. [Tickets de trabajo](#6-tickets-de-trabajo)
 7. [Pull requests](#7-pull-requests)
+8. [Features con ciclo completo CP0-CP5 (prompts reales)](#8-features-con-ciclo-completo-cp0-cp5-prompts-reales)
 
 > Los prompts siguen una estructura experta: **ROL · CONTEXTO · OBJETIVO · RESTRICCIONES ·
 > ENTREGABLES · MÉTODO**. El contenido resultante de cada sección está documentado en
 > `readme.md`.
+
+---
+
+## 🧭 Metodología de prompting: SDD con CP0-CP5
+
+Todo el proyecto se guio con **desarrollo dirigido por especificación (SDD)** mediante el
+**Ecosistema 360** (instalado en `.ecosystem360/`). La consecuencia práctica en el *prompting* es
+que **no se pedía "código" directamente**: se pedía avanzar por **checkpoints** con aprobación
+humana en las fronteras, bajo la regla **"contrato (CP2 SPEC) antes que código"**.
+
+**Cómo guié al asistente (patrón repetido en cada feature):**
+1. **Encuadre CP0-CP5.** El prompt de arranque pedía *"crea el prompt y además crea los CP"* —
+   es decir, primero generar los artefactos de intake/SRS/spec/plan, no saltar a implementar.
+2. **Decisiones de producto antes de codificar.** Ante ambigüedad, el asistente hacía preguntas
+   acotadas (persistencia, recarga en caliente, alcance) y yo respondía con criterios de negocio
+   (*"lo más escalable, no básico"*, *"en la tienda se vende de todo"*).
+3. **Contrato como frontera.** La implementación seguía el CP2 (REQ-/NFR-) y el CP3 (Repo Paths);
+   nada fuera del contrato.
+4. **Validación y cierre.** Tras implementar: tests + verificación en vivo (CP4) y cierre con
+   decisiones/aprendizajes (CP5), pasando la checklist **TRUST 5**.
+
+> Los prompts concretos que dispararon cada checkpoint están en la
+> [sección 8](#8-features-con-ciclo-completo-cp0-cp5-prompts-reales). El *prompt de implementación*
+> generado como artefacto vive en el repo de código:
+> `.ecosystem360/work/features/2026-07-06-stores-cameras-management/implementation-prompt.md`.
 
 ---
 
@@ -1068,3 +1095,79 @@ Redactar el PR que añade soporte PostgreSQL manteniendo SQLite como default.
 # ENTREGABLE
 El PR-3 redactado con la plantilla (resumen, cambios principales, checklist).
 ```
+
+---
+
+## 8. Features con ciclo completo CP0-CP5 (prompts reales)
+
+Esta sección documenta los **prompts reales** (no reconstruidos) con los que se desarrollaron las
+features de la iteración final, siguiendo el ciclo SDD. Muestran el patrón *"CP antes que código"*.
+
+### 8.1 Feature `stores-cameras-management` (gestión de cámaras/tiendas)
+
+**Prompt 1 — arranque, pidiendo los CP antes del código:**
+```
+puedo adicionar una nueva funcionalidad que sea la de adicionar nuevas cámaras y
+nuevas tiendas, además de configurar la tienda donde me encuentro. Puedes crear el
+prompt y además crear los cp
+```
+> **Cómo guié al asistente:** en vez de implementar, se le pidió **generar los artefactos CP0-CP5**
+> (intake, SRS, spec, plan) + un *implementation-prompt.md*. El asistente hizo primero **preguntas
+> de alcance** (¿qué cubre?, ¿recarga en caliente o reinicio?, ¿dónde persistir?).
+
+**Prompt 2 — decisión de producto que fijó los NFR (escalabilidad):**
+```
+Marca todo lo que mejor se ajuste a que mi aplicación sea escalable, no te quedes con
+algo muy básico dame lo mejor … debe ser en postgres como lo haces en la actualidad
+```
+> **Cómo guié:** respondí con criterio de negocio (escalabilidad, Postgres, cámaras en caliente).
+> Eso se tradujo en el CP2 a REQ/NFR concretos: BD como fuente de verdad, seed idempotente, cifrado
+> en reposo de credenciales, y `camera_manager` con `add/remove/update` en caliente.
+
+**Prompt 3 — autorización de implementación y verificación:**
+```
+dale  →  ejecuta  →  reinicia  (tras el error KeyError por API vieja)
+```
+> **Cómo guié:** aprobé pasar de CP3 a implementación; luego pedí **verificación en vivo**. Al
+> aparecer un `KeyError` por no reiniciar la API (uvicorn no auto-recarga), se diagnosticó y se
+> documentó el *gotcha* en `CLAUDE.md`.
+
+### 8.2 Feature `concealment-any-object` (ocultar cualquier objeto)
+
+**Prompt 1 — reporte de comportamiento desde una prueba física:**
+```
+hice una prueba en la cámara, tomé un control remoto lo guardé en mi bolsillo y no
+logro detectarlo, esto es porque?
+```
+> **Cómo guié:** pedí **explicación de la causa** antes de cambiar nada. El asistente leyó el
+> pipeline (`patterns.py`) y explicó que el control no estaba en la lista de "objetos ocultables".
+
+**Prompt 2 — requisito de negocio que definió el alcance:**
+```
+puede ser cualquier objeto que guarde el cliente en el bolsillo o lo oculte, pues en
+la tienda se vende de todo
+```
+> **Cómo guié:** el requisito ("cualquier objeto") se convirtió en un **modo configurable**
+> (`whitelist | any` + `extra_classes`) con gating por zona `risk` para acotar falsos positivos —
+> formalizado en CP0-CP2 antes de tocar código.
+
+**Prompt 3 — depuración dirigida hasta la causa raíz:**
+```
+detecta cámaras  →  (tras ver ov=0.00 en el log)  →  no muestra el error cuando me
+ingreso al bolsillo un objeto, qué sucede ahí
+```
+> **Cómo guié:** pedí instrumentar la detección. Un log opt-in (`SHOPGUARD_DEBUG_DETECT=1`) reveló
+> que **persona y objeto nunca coincidían** (el modelo custom detectaba personas de forma
+> intermitente). El fix: usar también `person` del modelo base YOLOv8n + medir *fracción de
+> contención* en vez de IoU. Validado en vivo (dispara Patrón D con el control en el bolsillo).
+
+### 8.3 Documentación y entrega
+
+**Prompt — mantener docs y presentación al día tras cada feature:**
+```
+actualiza ahora la documentación … ajusta la presentación … no dudes en siempre dar o
+resaltar el ecosistema de SDD con los CP
+```
+> **Cómo guié:** pedí que la documentación (README, CHANGELOG, `docs/`) y la presentación HTML se
+> mantuvieran sincronizadas con el código, y que **el método SDD/CP se resaltara** como
+> diferenciador de la entrega.

@@ -1,6 +1,8 @@
 ## Índice
 
 0. [Ficha del proyecto](#0-ficha-del-proyecto)
+- [🧭 Metodología: Ecosistema 360 (SDD con CP0-CP5)](#-metodología-ecosistema-360-sdd-con-cp0-cp5)
+- [🚀 Despliegue y evidencia de funcionamiento](#-despliegue-y-evidencia-de-funcionamiento)
 1. [Descripción general del producto](#1-descripción-general-del-producto)
 2. [Arquitectura del sistema](#2-arquitectura-del-sistema)
 3. [Modelo de datos](#3-modelo-de-datos)
@@ -43,6 +45,119 @@ https://github.com/msolano/ShopGuard
 
 ---
 
+## 🧭 Metodología: Ecosistema 360 (SDD con CP0-CP5)
+
+Este proyecto no solo se construyó *con* IA: se construyó **con un método de desarrollo guiado
+por especificación (SDD, *Spec-Driven Development*)** llamado **Ecosistema 360**, instalado en el
+propio repo (`.ecosystem360/`). La regla de oro es **"contrato antes que código"**: ninguna
+feature sustancial se implementa sin su especificación aprobada. Esto convierte al asistente de IA
+en un ingeniero disciplinado y trazable, no en un generador de código suelto.
+
+### Ciclo de vida por feature — CP0 → CP5
+
+Cada feature relevante atraviesa **seis puntos de control (checkpoints)** con aprobación humana en
+las fronteras:
+
+| CP | Etapa | Salida |
+|----|-------|--------|
+| **CP0** | Intake | Contexto, fuentes, no-goals, preguntas abiertas |
+| **CP1** | SRS | Problema, usuarios, necesidades (NEED-xxx), riesgos, trazabilidad |
+| **CP2** | **SPEC** *(frontera)* | Requisitos (REQ-/NFR-), seguridad, criterios de aceptación, plan de pruebas |
+| **CP3** | Plan de implementación | Tareas por capa (T1…Tx), contratos, **Repo Paths** (spec ↔ código) |
+| **CP4** | Validación | Resultados de pruebas, hallazgos, revisión de seguridad, **TRUST 5** |
+| **CP5** | Cierre | Memoria compartida, decisiones (ADR), aprendizajes, backlog |
+
+Complementos: **decision-log** y **risk-register** por feature, ADRs para decisiones técnicas, y
+la checklist **TRUST 5** (Tested · Readable · Unified · Secured · Trackable) en cada cambio.
+Verificación de gobierno automatizada con `verify-governance.sh`.
+
+### Features entregadas con el ciclo completo CP0-CP5
+
+| Feature | Qué aporta | Artefactos |
+|---------|-----------|------------|
+| `stores-cameras-management` | Gestión de cámaras y tiendas **desde la UI**, en caliente, persistida en Postgres, con credenciales **cifradas en reposo** | CP0-CP5 + decision-log + risk-register |
+| `concealment-any-object` | Detección de ocultamiento de **cualquier objeto** (modo configurable) + fix de detección de personas | CP0-CP5 + decision-log |
+| `stores-cameras-management/detección` | Detección de cámaras USB conectadas (`GET /cameras/detect`) | Iteración sobre la feature |
+
+> Estos artefactos viven en `.ecosystem360/work/features/<fecha>-<slug>/` del repo de código.
+> Los prompts que guiaron cada checkpoint están documentados en [`prompts.md`](./prompts.md).
+
+**Por qué importa:** el método garantiza que cada decisión tenga su *por qué* registrado, que la
+seguridad se piense antes de codificar (no después), y que el trabajo sea auditable de principio a
+fin — exactamente lo que se espera de desarrollo asistido por IA hecho con rigor.
+
+---
+
+## 🚀 Despliegue y evidencia de funcionamiento
+
+El sistema está diseñado para **despliegue on-premise** (una instancia por tienda + gateway
+opcional). No hay un entorno público permanente (la detección procesa vídeo local por
+privacidad); a continuación, cómo ejecutarlo y evidencia del sistema **funcionando en vivo**.
+
+### Cómo ejecutarlo (3 pasos)
+
+```bash
+# 0) Requisitos: Python 3.11+, una cámara USB, Docker (para Postgres).
+git clone https://github.com/msolano/ShopGuard.git && cd ShopGuard
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt          # la primera vez descarga YOLOv8n (~6 MB)
+
+# 1) Base de datos (Postgres en Docker; o usa SQLite por defecto sin este paso)
+docker compose --env-file .env.postgres.example up -d postgres
+
+# 2) Arrancar API + dashboard de la tienda
+./start.sh          # API :8000 (docs en /docs) · Dashboard :8501
+
+# 3) (Opcional) Gateway central multi-tienda
+./start_gateway.sh  # SPA :8080
+```
+
+Accesos: **Dashboard** http://localhost:8501 · **API docs** http://localhost:8000/docs ·
+**Gateway** http://localhost:8080.
+
+### Evidencia (verificada en esta máquina)
+
+**1. API en ejecución — Swagger `/docs`** (todos los endpoints, incluidos los de gestión y
+detección de cámaras):
+
+![API Swagger docs](evidencia/api-docs-swagger.png)
+
+**2. Cámaras corriendo** (`GET /health`) — dos cámaras activas, detección en tiempo real:
+
+```json
+{ "camaras": [
+  { "cam_id": 0, "name": "MacBook Pro (built-in)", "health": "ok", "fps": 15.0, "model": "custom_best.pt" },
+  { "cam_id": 1, "name": "EMEET SmartCam S600",   "health": "ok", "fps": 14.2, "model": "custom_best.pt" }
+] }
+```
+
+**3. Detección de cámaras conectadas** (`GET /cameras/detect`) — reporta índices en uso vs. libres:
+
+```json
+{ "detectadas": [
+  { "index": 0, "status": "en_uso" }, { "index": 1, "status": "en_uso" },
+  { "index": 2, "status": "no_detectada" }, { "index": 3, "status": "no_detectada" }
+] }
+```
+
+**4. Detección en vivo del flujo principal** — prueba física real (objeto guardado en el bolsillo)
+que dispara el **Patrón D [ALTO]**, registrada en el log del sistema:
+
+```
+[ALTO] Patrón D — Objeto 'cell phone' entró al área corporal de la persona y no reapareció.
+[ALTO] Patrón D — Objeto 'concealing_object' entró al área corporal de la persona y no reapareció.
+```
+
+**5. Suite de pruebas** — `pytest -q tests/` → **86 passed** (ver §2.6).
+
+**6. Presentación del proyecto** (arquitectura + call-flow): [`evidencia/presentacion-shopguard.html`](evidencia/presentacion-shopguard.html).
+
+> **Vídeo del flujo principal (recomendado):** por ser el repositorio de código privado, se
+> recomienda anexar un vídeo breve (2–3 min) mostrando: alta de una cámara desde la UI, el vídeo en
+> vivo con detección, y una alerta disparándose. *(Placeholder para el enlace del vídeo.)*
+
+---
+
 ## 1. Descripción general del producto
 
 ### **1.1. Objetivo:**
@@ -67,13 +182,74 @@ tiempo real** y de bajo coste, sin hardware especializado.
 
 **Detección de patrones de riesgo** (visión por computador):
 
-| Patrón | Nivel | Descripción |
-|--------|-------|-------------|
-| A | ALTO | Objeto visible → la mano se acerca → el objeto desaparece (ocultamiento) |
-| B | MEDIO | Persona quieta más de N segundos en un área (permanencia anómala) |
-| C | MEDIO/ALTO | Postura sospechosa (agachado, espalda a cámara, manos al torso) |
-| D | ALTO | Objeto entra al *bounding box* de la persona y no reaparece |
-| Custom | ALTO | Clase sospechosa detectada por un modelo entrenado a medida |
+| Patrón | Nombre | Nivel | Qué detecta |
+|--------|--------|-------|-------------|
+| A | Ocultamiento de objeto | ALTO | Un producto estaba a la vista, una mano se le acerca y el producto **desaparece** del campo de la cámara |
+| B | Permanencia anómala | MEDIO | Una persona se queda **quieta en el mismo sitio** más de N segundos |
+| C | Postura sospechosa | MEDIO/ALTO | El cuerpo adopta una **pose de ocultar**: agacharse de golpe, dar la espalda a la cámara o llevarse las manos al torso |
+| D | Objeto pegado al cuerpo | ALTO | Un producto **entra en la silueta** de la persona (bolsillo, bolso, chaqueta) y ya no vuelve a verse |
+| E | Objeto en bolso/mochila | ALTO | Un producto **entra en un bolso o mochila** y desaparece de la vista |
+| F | Salida sin pago | ALTO | Una persona **cruza la zona de salida** poco después de un ocultamiento *(zona `exit`; off por defecto)* |
+| G | Zona restringida | MEDIO/ALTO | Una persona **entra a un área no permitida** (tras el mostrador, almacén) *(zona `restricted`)* |
+| H | Coordinación de grupo | MEDIO | **Varias personas** juntas de forma sostenida — posible ORC *(off por defecto)* |
+| I | Merodeo repetitivo | MEDIO | Una persona hace **idas y vueltas** repetidas frente a un área |
+| Custom | Modelo entrenado | ALTO | Un modelo entrenado a medida reconoce una clase de riesgo (p. ej. `hand_in_pocket`, `concealing_object`) |
+
+> Los patrones que dependen de una zona (F `exit`, G `restricted`) y la variante B′ (permanencia
+> acotada a zona `risk`) requieren definir **zonas tipadas** en `employee_zones` de
+> [`app/rules.yaml`](app/rules.yaml) con el campo `role`. Sin zonas, esos patrones no disparan.
+
+**Ejemplos reales (cómo se ve cada patrón en tienda):**
+
+- **A — Ocultamiento de objeto.** Sobre el estante hay una botella de perfume. Un cliente la
+  toma, acerca la mano al cuerpo y la botella deja de verse en cámara. → *alerta ALTO*.
+  Es el caso clásico de "se lo guardó". *(Un cliente que solo mueve el producto de sitio, sin
+  ocultarlo, no dispara: el objeto sigue visible.)*
+- **B — Permanencia anómala.** Alguien lleva 40 s parado sin moverse frente a un expositor de
+  gafas en una zona sin personal. → *alerta MEDIO*. Sirve para vigilar zonas restringidas.
+  ⚠️ Genera falsos positivos con clientes que solo miran el estante, por eso viene
+  **desactivado por defecto** (`patterns.B.enabled: false` en `app/rules.yaml`).
+- **C — Postura sospechosa.** Una persona se agacha bruscamente detrás de una góndola y se
+  lleva ambas manos al torso. → *alerta MEDIO o ALTO* según cuántos indicadores coincidan.
+  Detecta el "manipular algo escondido" aunque no se vea el producto.
+- **D — Objeto pegado al cuerpo.** Un desodorante se solapa con la silueta de la persona
+  durante 3-4 s y ya no reaparece: se lo metió al bolsillo o al bolso. → *alerta ALTO*.
+- **E — Objeto en bolso/mochila.** Un cliente abre su mochila junto al estante, mete una caja
+  de maquillaje y la caja deja de verse. → *alerta ALTO*. Es el "concealment en bolso" clásico;
+  como D, pero el contenedor es el bolso en vez del cuerpo.
+- **F — Salida sin pago.** Segundos después de un ocultamiento (A/D/E), la persona cruza la
+  franja de la puerta marcada como zona `exit`. → *alerta ALTO*. Es una **heurística sin caja
+  registradora**, por eso viene **desactivada por defecto** y solo actúa si defines una zona
+  `exit`.
+- **G — Zona restringida.** Alguien pasa detrás del mostrador o entra al almacén (área marcada
+  como zona `restricted`). → *alerta MEDIO* (o ALTO si la configuras así). La sola presencia
+  basta; no necesita ocultamiento.
+- **H — Coordinación de grupo.** Tres o más personas permanecen juntas de forma sostenida
+  (patrón típico de banda que distrae y dispersa). → *alerta MEDIO*. Heurística cruda (no
+  distingue una familia), **desactivada por defecto**.
+- **I — Merodeo repetitivo.** Una persona va y viene varias veces frente al mismo expositor
+  sin decidirse (preparando el hurto). → *alerta MEDIO*. Cuenta las inversiones de dirección.
+- **Custom — Modelo entrenado.** El modelo propio marca la clase `concealing_object` con
+  confianza ≥ 0.80. → *alerta ALTO*. Es la vía para reglas específicas de tu negocio (incluida,
+  por ejemplo, la remoción de etiqueta antihurto si entrenas esa clase).
+
+> Los nombres legibles aparecen también en el dashboard junto a la letra (ej. *Patrón A ·
+> Ocultamiento de objeto*). Los umbrales de cada patrón (segundos, sensibilidad, cooldown) se
+> ajustan en [`app/rules.yaml`](app/rules.yaml) y se recargan en caliente con
+> `POST /config/reload`.
+
+**Ocultar "cualquier objeto" (para tiendas que venden de todo).** Por defecto los patrones de
+ocultamiento (A/D/E) vigilan una lista corta de objetos comunes. Con `patterns.concealment.mode:
+any` en `rules.yaml`, **cualquier** objeto que el modelo reconozca cuenta como ocultable; con
+`extra_classes: [remote, book, …]` puedes ampliar la lista sin ir al modo completo. El modo `any`
+sube los falsos positivos (un cliente que guarda su propio celular también dispara), por eso se
+puede acotar a **zonas `risk`** con `any_risk_zone_only`. Además la gestión de **cámaras y tiendas
+se hace desde la UI** (dashboard y SPA del gateway), persistida en base de datos y con las
+credenciales cifradas en reposo.
+
+> **Gestión sin tocar archivos:** desde la v1.2 las cámaras de la tienda, sus ajustes y las
+> tiendas del gateway se dan de alta/editan **desde la interfaz** (persistido en Postgres); `.env`
+> y `stores.yaml` solo siembran el primer arranque.
 
 **Otras funcionalidades:**
 - Streaming de vídeo en vivo (MJPEG) por cámara, embebible en el dashboard.
@@ -213,7 +389,7 @@ avanzada en el MVP.
 |-----------|-----------|-----|
 | `app/main.py` | FastAPI | API REST, MJPEG, WebSocket, `POST /config(/reload)` |
 | `app/camera_manager.py` | OpenCV + ultralytics + threading | `CameraDetector` (hilo/cámara) y `CameraManager` (ciclo de vida, reconexión) |
-| `app/patterns.py` | NumPy + MediaPipe | `PatternDetector`: heurísticas A–D + custom, estado temporal, cooldowns |
+| `app/patterns.py` | NumPy + MediaPipe | `PatternDetector`: heurísticas A–I + custom, estado temporal, cooldowns |
 | `app/rules_loader.py` | PyYAML | Singleton de `rules.yaml`, recarga en caliente |
 | `app/alerts.py` | python-telegram-bot | `send_alert`: evidencia + BD + Telegram + cola WebSocket |
 | `app/database.py` | SQLAlchemy 2.0 | ORM (tabla `alerts`) + consultas/estadísticas; SQLite o PostgreSQL |
@@ -236,7 +412,7 @@ ShopGuard/
 ├── app/                      # Backend de tienda (FastAPI)
 │   ├── main.py               # API REST + MJPEG + WebSocket + /config
 │   ├── camera_manager.py     # CameraDetector (hilo/cámara) + CameraManager
-│   ├── patterns.py           # PatternDetector: heurísticas A–D + custom
+│   ├── patterns.py           # PatternDetector: heurísticas A–I + custom
 │   ├── rules_loader.py       # Singleton de rules.yaml (recarga en caliente)
 │   ├── rules.yaml            # Umbrales, cooldowns, flags enabled
 │   ├── alerts.py             # send_alert: evidencia + BD + Telegram + WS
@@ -298,17 +474,24 @@ pide un token con `GET /cameras/{id}/stream/token` (con `X-API-Key`) y abre
 
 ### **2.6. Tests**
 
-Estrategia en **pirámide** (definida en `docs/06_test_suite.md`):
-- **Unitarios:** lógica aislada con cámara/YOLO/MediaPipe/Telegram mockeados
-  (`test_patterns.py`, `test_alerts.py`, `test_rules_loader.py`, `test_camera_manager.py`).
-- **Integración:** API REST con `TestClient` contra SQLite en memoria `sqlite:///:memory:`
-  (`test_api.py`, `test_database.py`).
-- **E2E:** flujo completo de frame de cámara → alerta → resolución vía API
-  (`test_e2e_detection_to_resolution.py`).
+Suite con **`pytest`** — **86 tests en verde** (`.venv/bin/python -m pytest -q tests/`), con
+cámara/YOLO/MediaPipe/Telegram mockeados y BD aislada en temporales (`tests/conftest.py` fija
+`SHOPGUARD_HOME`/`DATABASE_URL` antes de importar). Cobertura por área:
 
-Ejemplos de casos: el patrón A dispara al desaparecer un objeto tras acercar la mano; los
-cooldowns evitan alertas duplicadas; `GET /alerts` respeta los filtros; con `AUTH_REQUIRED=true`
-una request sin `X-API-Key` devuelve `401`.
+| Archivo | Qué cubre |
+|---------|-----------|
+| `test_patterns.py` · `test_patterns_concealment.py` | Patrones A–I, zonas, modo de ocultamiento `any`/`whitelist`, fracción de contención |
+| `test_crypto.py` | Cifrado en reposo (round-trip Fernet) + enmascarado de credenciales |
+| `test_config_store.py` · `test_store_repo.py` | Persistencia de cámaras/ajustes/tiendas, seed idempotente, límites |
+| `test_zones.py` | Supresión por zona de empleado (point-in-polygon, normalización) |
+| `test_labeling.py` · `test_dataset_export.py` | Etiquetado de evidencias y export de dataset YOLO |
+| `test_telegram_sender.py` · `test_setup_telegram.py` | Envío no-bloqueante y wizard de configuración |
+
+Ejemplos de casos: el patrón D dispara al desaparecer un objeto dentro de la silueta y no
+reaparecer; en modo `any` cualquier objeto cuenta y en `whitelist` no; el round-trip de cifrado
+recupera el valor y el enmascarado nunca expone la credencial; el seed no duplica en el segundo
+arranque. La verificación **en vivo** (cámara real → Patrón D → alerta) está documentada en la
+sección de despliegue.
 
 ---
 
@@ -328,12 +511,34 @@ erDiagram
         Integer  camera_id        "cámara origen — default 0, NOT NULL"
         Boolean  resolved         "atendida — default false, NOT NULL"
     }
+    CAMERA_CONFIGS {
+        Integer  id            PK "0..7, estable = cam_id"
+        String   name             "nombre visible — NOT NULL"
+        Text     source_enc       "fuente USB/RTSP CIFRADA — NOT NULL"
+        Boolean  enabled          "arranca al iniciar — default true"
+        DateTime created_at        "auditoría"
+        DateTime updated_at        "auditoría"
+    }
+    STORE_SETTINGS {
+        String key            PK "clave del ajuste"
+        Text   value_json        "valor serializado JSON — NOT NULL"
+    }
+    GATEWAY_STORES {
+        String  id            PK "slug estable de la tienda"
+        String  name             "etiqueta visible — NOT NULL"
+        String  api_url          "URL de la tienda — NOT NULL"
+        Text    api_key_enc      "api_key CIFRADA — NULLABLE"
+        Boolean active           "monitoreada — default true"
+    }
 ```
 
-El modelo es deliberadamente minimalista: una sola entidad de persistencia (`alerts`). La
-configuración (cámaras, umbrales, tiendas) NO se persiste en BD (vive en `config.py`,
-`rules.yaml`, `stores.yaml`) y la evidencia se guarda como archivo en `evidence/` (la fila solo
-almacena su ruta).
+Persistencia (SQLAlchemy, Postgres en producción / SQLite fallback): las alertas y, desde
+la feature `stores-cameras-management`, **la configuración operativa** (cámaras, ajustes de
+tienda y tiendas del gateway) viven en BD, que es la **fuente de verdad**. `.env`/`stores.yaml`
+solo *siembran* (idempotente) el primer arranque. Las credenciales (RTSP, api_key) se guardan
+**cifradas en reposo** (Fernet, `app/crypto.py`) y se devuelven enmascaradas. La evidencia sigue
+como archivo en `evidence/` (la fila solo guarda la ruta). El diagrama omite las tablas de
+soporte `zones`, `image_annotations` e `image_reviews` (features de zonas y etiquetado).
 
 ### **3.2. Descripción de entidades principales:**
 
@@ -354,6 +559,30 @@ almacena su ruta).
 (`extract('hour', ...)`) funcionen igual en SQLite y PostgreSQL. En la versión multi-tienda, el
 `store_id` NO se añade al esquema: el gateway lo enriquece en el *payload* (REST y WebSocket).
 Por defecto solo se persisten las alertas `ALTO` (`alerts.save_medium_to_db: false`).
+
+**`camera_configs`** — cámaras de la tienda local (feature `stores-cameras-management`).
+
+| Campo | Tipo | Restricciones | Descripción |
+|-------|------|---------------|-------------|
+| `id` | Integer | PK (no autoincrement) | Estable 0..7, usado como `cam_id` y en las URLs de stream |
+| `name` | String(120) | NOT NULL | Nombre visible de la cámara |
+| `source_enc` | Text | NOT NULL | Fuente (índice USB o URL RTSP) **cifrada** en reposo |
+| `enabled` | Boolean | NOT NULL, default `true` | Si arranca su detector al iniciar |
+| `created_at` / `updated_at` | DateTime | NOT NULL | Auditoría |
+
+**`store_settings`** — ajustes de la tienda local como clave→valor (JSON): `store_name`,
+`confidence_threshold`, `suspicious_time_seconds`, `hours_enabled`, `open_hour`, `close_hour`.
+
+**`gateway_stores`** — tiendas monitoreadas por el gateway (fuente de verdad, reemplaza
+`stores.yaml` como config operativa).
+
+| Campo | Tipo | Restricciones | Descripción |
+|-------|------|---------------|-------------|
+| `id` | String(64) | PK | Slug estable de la tienda (URLs `/api/stores/{id}/...`) |
+| `name` | String(160) | NOT NULL | Etiqueta visible |
+| `api_url` | String(300) | NOT NULL | URL de la API de la tienda |
+| `api_key_enc` | Text | NULLABLE | api_key **cifrada** en reposo (enmascarada en la API) |
+| `active` | Boolean | NOT NULL, default `true` | Si el gateway la agrega y suscribe al fan-out |
 
 ---
 
@@ -399,10 +628,55 @@ paths:
       responses:
         "200": { description: Estadísticas del sistema }
 
+  /cameras:
+    get:
+      summary: Lista cámaras (config persistida + estado de runtime)
+      security: [{ ApiKeyAuth: [] }]
+      responses:
+        "200": { description: Lista de cámaras (fuente enmascarada) }
+    post:
+      summary: Alta de cámara en caliente (feature stores-cameras-management)
+      security: [{ ApiKeyAuth: [] }]
+      requestBody:
+        content: { application/json: { schema: { type: object,
+          properties: { name: {type: string}, source: {type: string}, enabled: {type: boolean} },
+          required: [name, source] } } }
+      responses:
+        "201": { description: Cámara creada y arrancada }
+        "409": { description: Se alcanzó el máximo de cámaras }
+        "422": { description: Fuente inválida (USB 0-7 o URL rtsp/http) }
+
+  /cameras/{cam_id}:
+    put:
+      summary: Edita una cámara y aplica el cambio en caliente
+      security: [{ ApiKeyAuth: [] }]
+      parameters: [{ name: cam_id, in: path, required: true, schema: { type: integer } }]
+      responses: { "200": { description: Cámara actualizada }, "404": { description: No encontrada } }
+    delete:
+      summary: Detiene y elimina una cámara en caliente
+      security: [{ ApiKeyAuth: [] }]
+      parameters: [{ name: cam_id, in: path, required: true, schema: { type: integer } }]
+      responses: { "200": { description: Cámara eliminada }, "404": { description: No encontrada } }
+
+  /store/config:
+    get:
+      summary: Ajustes persistidos de la tienda (nombre, umbrales, horario)
+      security: [{ ApiKeyAuth: [] }]
+      responses: { "200": { description: Ajustes de la tienda } }
+    put:
+      summary: Edita y persiste los ajustes; los umbrales se aplican en caliente
+      security: [{ ApiKeyAuth: [] }]
+      responses: { "200": { description: Ajustes guardados }, "422": { description: Valor inválido } }
+
 components:
   securitySchemes:
     ApiKeyAuth: { type: apiKey, in: header, name: X-API-Key }
 ```
+
+**Gateway — gestión de tiendas** (feature `stores-cameras-management`, autenticado por sesión
+firmada `shopguard_session`): `GET /api/admin/stores` (lista con api_key enmascarada),
+`POST /api/admin/stores` (alta + suscripción al fan-out en caliente),
+`PUT /api/admin/stores/{id}` y `DELETE /api/admin/stores/{id}`.
 
 **Ejemplo — `GET /alerts?level=ALTO&resolved=false&limit=50`:**
 ```json
@@ -519,3 +793,39 @@ Permite PostgreSQL para instalaciones grandes manteniendo SQLite como default. C
 portables), `docker-compose.yml` (postgres:16-alpine con healthcheck y volumen) y
 `scripts/migrate_sqlite_to_postgres.py`. *Checklist:* SQLite sigue siendo el default · cambio de
 motor solo con `DATABASE_URL` · migración de datos sin pérdida.
+
+---
+
+> Las siguientes features se desarrollaron con el **ciclo completo CP0-CP5** del Ecosistema 360
+> (ver [Metodología](#-metodología-ecosistema-360-sdd-con-cp0-cp5)). PR agregado:
+> **[msolano/ShopGuard#1](https://github.com/msolano/ShopGuard/pull/1)**.
+
+**Pull Request 4 — feat(config): gestión de cámaras y tiendas desde la UI (persistencia + cifrado)**
+
+*Feature `stores-cameras-management` (CP0-CP5).* La configuración operativa (cámaras, ajustes de
+tienda, tiendas del gateway) pasa a **Postgres como fuente de verdad**; `.env`/`stores.yaml` solo
+siembran (seed idempotente). CRUD de cámaras **en caliente** (`POST/PUT/DELETE /cameras` +
+`camera_manager.add/remove/update` con lock), ajustes de tienda (`GET/PUT /store/config`), alta de
+tiendas en el gateway (`/api/admin/stores` + re-suscripción del fan-out) y **cifrado en reposo**
+(Fernet) de credenciales RTSP/api_key con enmascarado en API/logs (`app/crypto.py`). UI: pestaña
+"Cámaras y tienda" (Streamlit) + vista `#/admin` (SPA). *Checklist:* 80 tests verdes ·
+credenciales nunca en claro · degradación segura si cambia la clave.
+
+**Pull Request 5 — feat(detection): ocultamiento de cualquier objeto + fix de detección de personas**
+
+*Feature `concealment-any-object` (CP0-CP5).* Modo configurable `patterns.concealment.mode:
+whitelist | any` para detectar el ocultamiento de **cualquier** objeto (tienda que "vende de
+todo"). **Fix raíz:** las personas solo las veía el modelo custom (intermitente) → ahora también
+se usa `person` del modelo base yolov8n; y los patrones D/E miden **fracción de contención** en vez
+de IoU (antes casi no disparaban con objetos pequeños). *Checklist:* validado en vivo (dispara
+Patrón D con `remote`/`cell phone`) · 86 tests verdes · diagnóstico opt-in `SHOPGUARD_DEBUG_DETECT`.
+
+**Pull Request 6 — feat(cameras): detección de cámaras USB conectadas**
+
+`GET /cameras/detect` sondea los índices USB y reporta `disponible`/`en_uso`/`no_detectada`; botón
+"🔍 Detectar cámaras" en el dashboard para descubrirlas sin adivinar el índice. *Checklist:* salta
+los índices en uso para no pelear por el device · verificado con 2 cámaras.
+
+> **Nota de proceso:** cada PR incluye título claro, descripción (qué cambia, por qué, impacto) y
+> checklist, y referencia su feature/artefactos CP. Los mensajes de commit siguen *Conventional
+> Commits* (`feat(...)`, `fix(...)`, `docs(...)`, `chore(...)`).
