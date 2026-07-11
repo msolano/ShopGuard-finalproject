@@ -140,17 +140,25 @@ detección de cámaras):
 ] }
 ```
 
-**4. Detección en vivo del flujo principal** — prueba física real (objeto guardado en el bolsillo)
-que dispara el **Patrón D [ALTO]**, registrada en el log del sistema:
+**4. Sistema funcionando en una tienda real** — la cámara procesa las estanterías en vivo con las
+detecciones dibujadas (HUD con FPS y contador de alertas):
+
+![Snapshot en tienda real](evidencia/snapshot-tienda.jpg)
+
+Clip animado (30 fotogramas en vivo, el contador de alertas incrementa durante la captura):
+[`evidencia/demo-tienda-live.gif`](evidencia/demo-tienda-live.gif).
+
+**5. Detección del flujo principal (Patrón D)** — prueba física real (objeto guardado en el
+bolsillo) que dispara el **Patrón D [ALTO]**, registrada en el log del sistema:
 
 ```
 [ALTO] Patrón D — Objeto 'cell phone' entró al área corporal de la persona y no reapareció.
 [ALTO] Patrón D — Objeto 'concealing_object' entró al área corporal de la persona y no reapareció.
 ```
 
-**5. Suite de pruebas** — `pytest -q tests/` → **86 passed** (ver §2.6).
+**6. Suite de pruebas** — `pytest -q tests/` → **86 passed** (ver §2.6).
 
-**6. Presentación del proyecto** (arquitectura + call-flow): [`evidencia/presentacion-shopguard.html`](evidencia/presentacion-shopguard.html).
+**7. Presentación del proyecto** (arquitectura + call-flow): [`evidencia/presentacion-shopguard.html`](evidencia/presentacion-shopguard.html).
 
 > **Vídeo del flujo principal (recomendado):** por ser el repositorio de código privado, se
 > recomienda anexar un vídeo breve (2–3 min) mostrando: alta de una cámara desde la UI, el vídeo en
