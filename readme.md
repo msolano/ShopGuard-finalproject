@@ -160,7 +160,8 @@ Objeto 'hand_in_pocket' entró al área corporal de la persona y no reapareció.
 Cámara: 0 · 10/07/2026 20:25
 ```
 
-**6. Vídeo de demostración** — grabación del sistema funcionando en la tienda:
+**6. Vídeo de demostración** (~27 s) — grabación del sistema procesando el vídeo de la cámara en
+una tienda real, con las detecciones dibujadas en tiempo real sobre las estanterías:
 [`evidencia/demo.mp4`](evidencia/demo.mp4) *(descárgalo para reproducir).*
 
 **7. Suite de pruebas** — `pytest -q tests/` → **86 passed** (ver §2.6).
